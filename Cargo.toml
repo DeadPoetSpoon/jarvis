@@ -1,0 +1,44 @@
+[package]
+name = "jarvis"
+version = "0.1.0"
+edition = "2021"
+authors = ["Dead Poet Spoon <deadpoetspoon@qq.com>"]
+
+[package.metadate.docs.rs]
+all-features = true
+targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
+
+[dependencies]
+chrono = "0.4.38"
+serde = {version = "1.0", features=["derive"]}
+log = "0.4.22"
+ron = "0.8"
+anyhow = "1.0.93"
+ehttp = {version = "0.5.0"}
+egui = {version="0.29.1",optional=true}
+eframe = {  version = "0.29.1",  default-features = false,  features = ["glow","persistence"],optional =true}
+poll-promise = {version="0.3.0",optional=true}
+
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+env_logger = "0.11.5"
+rocket = {version = "0.5.1",optional = true}
+rocket_cors ={version="0.6.0",optional=true}
+minio = {version = "0.1.0",optional=true}
+
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4.47"
+web-sys = "0.3.74"
+
+[profile.release]
+opt-level = 2 
+
+[profile.dev.package."*"]
+opt-level = 2
+
+
+[features]
+default = ["server"]
+server=["dep:rocket","dep:rocket_cors","dep:minio"]
+ui=["dep:egui","dep:eframe","poll-promise"]
