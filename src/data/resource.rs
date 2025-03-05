@@ -1,5 +1,7 @@
 use std::{fmt::Display, path::PathBuf};
 
+use super::Job;
+
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
 pub struct ResourceId {
     pub place: String,
@@ -10,8 +12,11 @@ pub struct ResourceId {
 pub enum ResourceData {
     #[default]
     NoData,
-    Sample(String),
+    SimpleMessage(String),
     Error(String),
+    Job(Job),
+    Jobs(Vec<Job>),
+    JobTable(Vec<Vec<Job>>),
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
@@ -21,12 +26,33 @@ pub struct Resource {
 }
 
 impl Resource {
+    pub fn is_msg_or_err(&self) -> bool {
+        matches!(
+            self.data,
+            ResourceData::SimpleMessage(_) | ResourceData::Error(_)
+        )
+    }
     pub fn pkg_error<T>(err: T) -> Self
     where
         T: Display,
     {
         Resource {
             data: ResourceData::Error(format!("Error: {err}")),
+            ..Default::default()
+        }
+    }
+    pub fn nothing() -> Self {
+        Resource {
+            data: ResourceData::NoData,
+            ..Default::default()
+        }
+    }
+    pub fn message<T>(str: T) -> Self
+    where
+        T: Display,
+    {
+        Resource {
+            data: ResourceData::SimpleMessage(format!("Simple Message: {str}")),
             ..Default::default()
         }
     }

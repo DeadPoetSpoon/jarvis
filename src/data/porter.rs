@@ -1,15 +1,18 @@
 use super::{resource::Resource, ResourceId};
+use chrono::{DateTime, Local};
 use poll_promise::Promise;
 
 pub trait Porter {
     fn fetch(&self, target: ResourceId) -> Promise<Resource>;
+    fn fetch_all(&self, target: ResourceId) -> Promise<Resource>;
     fn deliver(&self, resource: Resource) -> Promise<Resource>;
     fn destroy(&self, target: ResourceId) -> Promise<Resource>;
     fn replace(&self, resource: Resource) -> Promise<Resource>;
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
-enum RocketPorterAction {
+pub enum RocketPorterAction {
+    GetAll(ResourceId),
     Get(ResourceId),
     Post(Resource),
     Delete(ResourceId),
@@ -27,13 +30,9 @@ impl RocketPorter {
             url: url.to_owned(),
         }
     }
-}
-
-impl Porter for RocketPorter {
-    fn fetch(&self, target: ResourceId) -> Promise<Resource> {
+    pub fn fetch_promise(&self, action: &RocketPorterAction) -> Promise<Resource> {
         let (sender, promise) = Promise::new();
-        let action = RocketPorterAction::Get(target.clone());
-        let body = ron::ser::to_string(&action);
+        let body = ron::ser::to_string(action);
         if body.is_err() {
             sender.send(Resource::pkg_error(body.err().unwrap()));
             return promise;
@@ -50,10 +49,20 @@ impl Porter for RocketPorter {
         });
         promise
     }
+}
+
+impl Porter for RocketPorter {
+    fn fetch_all(&self, target: ResourceId) -> Promise<Resource> {
+        let action = RocketPorterAction::GetAll(target);
+        self.fetch_promise(&action)
+    }
+    fn fetch(&self, target: ResourceId) -> Promise<Resource> {
+        let action = RocketPorterAction::Get(target);
+        self.fetch_promise(&action)
+    }
     fn deliver(&self, resource: Resource) -> Promise<Resource> {
-        let (sender, promise) = Promise::new();
-        sender.send(Resource::default());
-        promise
+        let action = RocketPorterAction::Post(resource);
+        self.fetch_promise(&action)
     }
     fn destroy(&self, target: ResourceId) -> Promise<Resource> {
         let (sender, promise) = Promise::new();
