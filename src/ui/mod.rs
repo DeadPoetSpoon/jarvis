@@ -36,8 +36,6 @@ pub struct JarvisUI {
     anchor: Anchor,
     resources: Vec<Resource>,
     show_msg_panel: bool,
-    #[serde[skip]]
-    show_jobs: Vec<Vec<Resource>>,
     #[serde(skip)]
     del_all_msg: bool,
     #[serde(skip)]
@@ -57,7 +55,6 @@ impl Default for JarvisUI {
             anchor: Anchor::Schedule,
             resources: Vec::new(),
             show_msg_panel: false,
-            show_jobs: Vec::new(),
             del_all_msg: false,
             del_msg_index: None,
             rocket_porter,
@@ -258,17 +255,8 @@ impl JarvisUI {
     }
     fn push_resrouse(&mut self, resource: Resource) {
         self.resources.push(resource);
-        // match resource.data {
-        //     ResourceData::SimpleMessage(str) => {
-        //         self.name = str;
-        //     }
-        //     ResourceData::Error(err) => {
-        //         self.name = err;
-        //     }
-        //     ResourceData::Jobs(jobs) => {
-        //         self.name = jobs.first().unwrap().name.clone();
-        //     }
-        //     _ => {}
-        // };
+    }
+    fn pop_resrouse(&mut self) -> Option<Resource> {
+        self.resources.pop()
     }
 }

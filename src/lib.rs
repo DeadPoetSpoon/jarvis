@@ -7,6 +7,8 @@ pub use ui::JarvisUI;
 /// all model and porter to handle resource
 mod data;
 pub use data::*;
+mod porter;
+pub use porter::*;
 
 /// server to handle all resource and heavy work
 #[cfg(feature = "server")]
