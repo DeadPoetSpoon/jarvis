@@ -7,7 +7,7 @@ use std::{
 };
 
 use crate::{
-    data::{Porter, Resource, ResourceData, ResourceId, RocketPorter},
+    data::{Resource, ResourceData, ResourceId},
     Job,
 };
 use egui::{RichText, Ui};
@@ -80,16 +80,12 @@ pub fn ui(jarvis: &mut JarvisUI, ctx: &egui::Context, _frame: &mut eframe::Frame
                                     )
                                     .unwrap(),
                                 };
-                                let promise = jarvis.rocket_porter.fetch(id);
-                                jarvis.push_promise(promise);
                             }
                             if ui.button("fetch all jobs").clicked() {
                                 let id = ResourceId {
                                     place: "schedule".to_owned(),
                                     path: PathBuf::from_str("work/job/2024/12").unwrap(),
                                 };
-                                let promise = jarvis.rocket_porter.fetch_all(id);
-                                jarvis.push_promise(promise);
                             }
                         });
                         strip.cell(|ui| {
@@ -113,9 +109,6 @@ pub fn ui(jarvis: &mut JarvisUI, ctx: &egui::Context, _frame: &mut eframe::Frame
                                     id,
                                     data: ResourceData::Job(job),
                                 };
-
-                                let promise = jarvis.rocket_porter.deliver(resource);
-                                jarvis.push_promise(promise);
                             }
                         });
                     });

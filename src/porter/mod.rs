@@ -1,6 +1,5 @@
+use crate::Mission;
+
 pub trait porter {
-    pub fn handle(mission){
-
-    }
+    fn handle(mission: Mission) {}
 }
-

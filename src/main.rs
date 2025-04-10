@@ -2,19 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
 // When server:
-#[cfg(all(not(target_arch = "wasm32"), feature = "server"))]
-#[macro_use]
-extern crate rocket;
-
-#[cfg(all(not(target_arch = "wasm32"), feature = "server"))]
-#[launch]
-fn rocket() -> _ {
-    env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
-    jarvis::serve_jarvis_rocket()
-}
 
 // When compiling natively:
-#[cfg(feature = "ui")]
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {
     use log::info;
@@ -41,7 +30,6 @@ fn main() -> eframe::Result {
 }
 
 // When compiling to web using trunk:
-#[cfg(feature = "ui")]
 #[cfg(target_arch = "wasm32")]
 fn main() {
     use eframe::wasm_bindgen::JsCast as _;

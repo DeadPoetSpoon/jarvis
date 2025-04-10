@@ -6,7 +6,7 @@ use std::{
 };
 
 use crate::{
-    data::{Porter, Resource, ResourceData, ResourceId, RocketPorter},
+    data::{Resource, ResourceData, ResourceId},
     Job,
 };
 use chrono::{Datelike, Local, Timelike};
@@ -41,14 +41,11 @@ pub struct JarvisUI {
     #[serde(skip)]
     del_msg_index: Option<usize>,
     #[serde(skip)]
-    rocket_porter: RocketPorter,
-    #[serde(skip)]
     res_queue: Arc<Mutex<VecDeque<Promise<Resource>>>>,
 }
 
 impl Default for JarvisUI {
     fn default() -> Self {
-        let rocket_porter = RocketPorter::new("http://jarvis:8000/schedule");
         let res_queue = Arc::new(Mutex::new(VecDeque::new()));
         Self {
             name: "Jarvis".to_owned(),
@@ -57,7 +54,6 @@ impl Default for JarvisUI {
             show_msg_panel: false,
             del_all_msg: false,
             del_msg_index: None,
-            rocket_porter,
             res_queue,
         }
     }
