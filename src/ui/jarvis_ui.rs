@@ -14,6 +14,8 @@ use chrono::{Datelike, Local, Timelike};
 use log::debug;
 use poll_promise::Promise;
 
+use super::Show;
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Anchor {
     Day,
@@ -111,32 +113,16 @@ impl eframe::App for JarvisUI {
                 .show(ctx, |ui| {
                     ui.vertical(|ui| {
                         if ui.button("Add").clicked() {
-                            let msg = Resource::pkg_simple_msg("test");
+                            let msg = Resource::pkg_error(format!("err:{}",Local::now()));
                             let mut job: Job = Default::default();
                             job.kind(JobKind::Inner(InnerJobKind::AddMsg(msg)));
                             self.labor_hall.push_job(job);
                         }
-                        let mut job: Job = Default::default();
-                        job.kind(JobKind::Inner(InnerJobKind::GetMsg(None)));
-                        let _ = self.labor_hall.handle_job(&mut job);
-                        if let Some(res) = job.result {
-                            if let ResourceData::Mutli(vec) = res.data {
-                                for res in vec {
-                                    if let ResourceData::Message(msg) = res.data {
-                                        match msg {
-                                            crate::Message::SimpleMessage(msg) => {
-                                                ui.label(format!(
-                                                    "{} - {:?}",
-                                                    msg, job.finish_time
-                                                ));
-                                            }
-                                            crate::Message::Error(err) => {
-                                                ui.label(err);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+
+                        if let Ok(Some(mut res)) = self.labor_hall.get_all_inner_msg() {
+                            if let Err(err) = res.show(&super::ShowKind::ShortWithoutId, ui) {
+                                ui.label(format!("{}",err));
+                            };
                         }
                     });
                 });
@@ -177,21 +163,21 @@ impl JarvisUI {
         let mut font_definitiona = egui::FontDefinitions::default();
         font_definitiona.font_data.insert(
             "0x Regular".to_owned(),
-            egui::FontData::from_static(include_bytes!(
+            std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
                 "../../assets/fonts/0xProto/0xProtoNerdFontPropo-Regular.ttf"
-            )),
+            ))),
         );
         font_definitiona.font_data.insert(
             "0x Mono Regular".to_owned(),
-            egui::FontData::from_static(include_bytes!(
+            std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
                 "../../assets/fonts/0xProto/0xProtoNerdFontMono-Regular.ttf"
-            )),
+            ))),
         );
         font_definitiona.font_data.insert(
             "cn Regular".to_owned(),
-            egui::FontData::from_static(include_bytes!(
+            std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
                 "../../assets/fonts/SourceHanSans/SourceHanSansCN-Regular.otf"
-            )),
+            ))),
         );
 
         font_definitiona

@@ -52,7 +52,9 @@ impl Labor for InnerMsgLabor {
                     if let Some(msg) = self.msg_map.get(id) {
                         job.chain_result(msg.clone());
                     };
-                } else {
+                } else if(self.msg_map.len() > 0) {
+                    let result = Resource::new_mutli();
+                    job.chain_result(result);
                     for item in self.msg_map.clone() {
                         job.chain_result(item.1);
                     }

@@ -6,28 +6,31 @@ pub use jarvis_ui::*;
 mod resource_ui;
 pub use resource_ui::*;
 
+mod message_ui;
+pub use message_ui::*;
+
 mod schedule;
 pub use schedule::*;
+use thiserror::Error;
 
 #[derive(Default, Debug)]
 pub enum ShowKind {
     #[default]
+    ShortWithoutId,
     Short,
     Normal,
-    Window,
 }
 
 pub trait Show {
     fn show(
         &mut self,
         kind: &ShowKind,
-        ui: Option<&mut Ui>,
-        ctx: Option<&egui::Context>,
-        frame: Option<&mut eframe::Frame>,
+        ui: &mut Ui,
     ) -> anyhow::Result<()>;
 }
 
-#[derive(Debug)]
+#[derive(Error,Debug)]
 pub enum ShowError {
-    NeedUI,
+    #[error("Need passing `{0}` to show")]
+    NeedPassing(String),
 }

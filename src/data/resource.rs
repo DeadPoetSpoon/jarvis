@@ -74,10 +74,7 @@ impl Resource {
         if let ResourceData::Mutli(vec) = self.data.borrow_mut() {
             vec.push(other);
         } else {
-            let old = Resource {
-                data: self.data.clone(),
-                ..Default::default()
-            };
+            let old = self.clone();
             let vec = vec![old, other];
             self.data = ResourceData::Mutli(vec);
         }

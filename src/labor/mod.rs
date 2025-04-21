@@ -4,7 +4,7 @@ use std::collections::VecDeque;
 pub use inner_labor::*;
 use log::debug;
 
-use crate::Job;
+use crate::{InnerJobKind, Job, JobKind, Resource};
 
 pub trait Labor {
     fn handle(&mut self, job: &mut Job) -> anyhow::Result<()>;
@@ -36,6 +36,12 @@ impl Default for LaborHall {
 }
 
 impl LaborHall {
+    pub fn get_all_inner_msg(&mut self)-> anyhow::Result<Option<Resource>> {
+        let mut job: Job = Default::default();
+        job.kind(JobKind::Inner(InnerJobKind::GetMsg(None)));
+        self.handle_job(&mut job)?;
+        Ok(job.result)
+    }
     pub fn labor_limit(&mut self, limit: usize) -> &mut Self {
         self.run_job_limit = limit;
         self
