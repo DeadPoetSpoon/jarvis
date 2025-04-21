@@ -1,73 +1,100 @@
-use std::path::PathBuf;
+use std::collections::VecDeque;
 
-use chrono::{DateTime, Datelike, Local};
+use super::{job_kind::JobKind, Resource};
+use chrono::{DateTime, Local};
+use poll_promise::Promise;
 use uuid::Uuid;
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default)]
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Job {
     pub id: Uuid,
-    pub name: String,
-    pub father: Option<Uuid>,
-    pub des: Option<String>,
+    pub kind: JobKind,
     pub start_time: DateTime<Local>,
     pub finish_time: Option<DateTime<Local>>,
-    pub final_time: Option<DateTime<Local>>,
-    pub magnitude: i8,
-    pub urgency: i8,
+    pub result: Option<Resource>,
+    #[serde(skip)]
+    pub promise_result_queen: VecDeque<Promise<Resource>>,
+    pub should_after: Option<Uuid>,
+}
+
+impl Default for Job {
+    fn default() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            kind: Default::default(),
+            start_time: Default::default(),
+            finish_time: Default::default(),
+            result: Default::default(),
+            promise_result_queen: Default::default(),
+            should_after: Default::default(),
+        }
+    }
+}
+
+impl PartialEq for Job {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
 }
 
 impl Job {
+    pub fn is_me(&self, id: &Uuid) -> bool {
+        self.id == *id
+    }
+    pub fn chain_result(&mut self, result: Resource) -> &mut Self {
+        if self.result.is_none() {
+            self.result(result)
+        } else {
+            let result_res = self.result.as_mut();
+            result_res.unwrap().chain(result);
+            self
+        }
+    }
+    pub fn promise_result(&mut self, result: Promise<Resource>) -> &mut Self {
+        self.promise_result_queen.push_back(result);
+        self
+    }
+    fn result(&mut self, result: Resource) -> &mut Self {
+        self.result = Some(result);
+        self
+    }
     pub fn new() -> Self {
-        let id = Uuid::new_v4();
-        let start_time = Local::now();
         Self {
-            id,
-            start_time,
+            id: Uuid::new_v4(),
+            start_time: Local::now(),
             ..Default::default()
         }
     }
-    pub fn set_name(&mut self, name: String) -> &mut Self {
-        self.name = name;
+    pub fn should_after(&mut self, id: Uuid) -> &mut Self {
+        self.should_after = Some(id);
         self
     }
-    pub fn make_sub(&mut self, father_id: Uuid) -> &mut Self {
-        self.father = Some(father_id);
-        self
-    }
-    pub fn set_des(&mut self, des: String) -> &mut Self {
-        self.des = Some(des);
+    pub fn kind(&mut self, kind: JobKind) -> &mut Self {
+        self.kind = kind;
         self
     }
     pub fn finish(&mut self) -> &mut Self {
         self.finish_time = Some(Local::now());
         self
     }
-    pub fn set_final_time(&mut self, final_time: DateTime<Local>) -> &mut Self {
-        self.final_time = Some(final_time);
-        self
+    pub fn is_finish(&mut self) -> bool {
+        self.finish_time.is_some()
     }
-    pub fn remove_final_time(&mut self) -> &mut Self {
-        self.final_time = None;
-        self
-    }
-    pub fn set_magnitude(&mut self, magnitude: i8) -> &mut Self {
-        self.magnitude = magnitude;
-        self
-    }
-    pub fn set_urgency(&mut self, urgency: i8) -> &mut Self {
-        self.urgency = urgency;
-        self
-    }
-    pub fn is_father(&self) -> bool {
-        self.father.is_none()
-    }
-    pub fn path(&self) -> PathBuf {
-        let mut path = PathBuf::from("job");
-        let start_time = self.start_time;
-        path = path.join(PathBuf::from(start_time.year().to_string()));
-        path = path.join(PathBuf::from(start_time.month().to_string()));
-        let filename = format!("{}.job", self.id);
-        path = path.join(PathBuf::from(filename));
-        path
+    pub fn check_finish(&mut self) -> bool {
+        let len = self.promise_result_queen.len();
+        for _ in 0..len {
+            if let Some(result) = self.promise_result_queen.pop_front() {
+                if let Some(result) = result.ready() {
+                    self.chain_result(result.to_owned());
+                } else {
+                    self.promise_result_queen.push_back(result);
+                }
+            };
+        }
+        let len = self.promise_result_queen.len();
+        if len == 0 {
+            self.finish();
+        }
+        self.is_finish()
     }
 }

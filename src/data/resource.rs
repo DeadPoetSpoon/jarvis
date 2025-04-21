@@ -1,22 +1,33 @@
-use std::{fmt::Display, path::PathBuf};
+use std::{borrow::BorrowMut, fmt::Display, path::PathBuf};
 
-use super::Job;
+use uuid::Uuid;
 
-#[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
+use super::{Matters, Message};
+
+#[derive(serde::Deserialize, serde::Serialize, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ResourceId {
-    pub place: String,
-    pub path: PathBuf,
+    pub uid: Uuid,
+    pub place: Option<String>,
+    pub path: Option<PathBuf>,
+}
+
+impl Default for ResourceId {
+    fn default() -> Self {
+        Self {
+            uid: Uuid::new_v4(),
+            place: Default::default(),
+            path: Default::default(),
+        }
+    }
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
 pub enum ResourceData {
     #[default]
     NoData,
-    SimpleMessage(String),
-    Error(String),
-    Job(Job),
-    Jobs(Vec<Job>),
-    JobTable(Vec<Vec<Job>>),
+    Message(Message),
+    Matters(Matters),
+    Mutli(Vec<Resource>),
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
@@ -26,35 +37,51 @@ pub struct Resource {
 }
 
 impl Resource {
-    pub fn is_msg_or_err(&self) -> bool {
-        matches!(
-            self.data,
-            ResourceData::SimpleMessage(_) | ResourceData::Error(_)
-        )
+    pub fn is_me(&self, id: &Uuid) -> bool {
+        self.id.uid == *id
+    }
+    pub fn nodata() -> Self {
+        Resource {
+            data: ResourceData::NoData,
+            ..Default::default()
+        }
+    }
+    pub fn pkg_simple_msg<T>(msg: T) -> Self
+    where
+        T: Display,
+    {
+        Resource {
+            data: ResourceData::Message(Message::pkg_simple(msg)),
+            ..Default::default()
+        }
     }
     pub fn pkg_error<T>(err: T) -> Self
     where
         T: Display,
     {
         Resource {
-            data: ResourceData::Error(format!("Error: {err}")),
+            data: ResourceData::Message(Message::pkg_error(err)),
             ..Default::default()
         }
     }
-    pub fn nothing() -> Self {
+    pub fn new_mutli() -> Self {
         Resource {
-            data: ResourceData::NoData,
+            data: ResourceData::Mutli(Vec::new()),
             ..Default::default()
         }
     }
-    pub fn message<T>(str: T) -> Self
-    where
-        T: Display,
-    {
-        Resource {
-            data: ResourceData::SimpleMessage(format!("Simple Message: {str}")),
-            ..Default::default()
+    pub fn chain(&mut self, other: Resource) -> &mut Self {
+        if let ResourceData::Mutli(vec) = self.data.borrow_mut() {
+            vec.push(other);
+        } else {
+            let old = Resource {
+                data: self.data.clone(),
+                ..Default::default()
+            };
+            let vec = vec![old, other];
+            self.data = ResourceData::Mutli(vec);
         }
+        self
     }
 }
 

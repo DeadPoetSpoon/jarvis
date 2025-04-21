@@ -1,4 +1,4 @@
-use super::JarvisUI;
+use crate::JarvisUI;
 use std::{
     collections::VecDeque,
     path::PathBuf,
@@ -49,17 +49,6 @@ pub fn ui(jarvis: &mut JarvisUI, ctx: &egui::Context, _frame: &mut eframe::Frame
                                     family: egui::FontFamily::Monospace,
                                 }));
                             });
-
-                            for i in jarvis.resources.clone() {
-                                match i.data {
-                                    ResourceData::Jobs(a) => {
-                                        for n in a {
-                                            ui.label(n.name);
-                                        }
-                                    }
-                                    _ => {}
-                                }
-                            }
                         });
                     });
                 });
@@ -71,22 +60,8 @@ pub fn ui(jarvis: &mut JarvisUI, ctx: &egui::Context, _frame: &mut eframe::Frame
                                 0.0,
                                 ui.visuals().faint_bg_color,
                             );
-
-                            if ui.button("get job").clicked() {
-                                let id = ResourceId {
-                                    place: "schedule".to_owned(),
-                                    path: PathBuf::from_str(
-                                        "work/job/2024/12/54e34ac5-3e0b-4b30-94d5-309f31fd2367.job",
-                                    )
-                                    .unwrap(),
-                                };
-                            }
-                            if ui.button("fetch all jobs").clicked() {
-                                let id = ResourceId {
-                                    place: "schedule".to_owned(),
-                                    path: PathBuf::from_str("work/job/2024/12").unwrap(),
-                                };
-                            }
+                            if ui.button("get job").clicked() {}
+                            if ui.button("fetch all jobs").clicked() {}
                         });
                         strip.cell(|ui| {
                             ui.painter().rect_filled(
@@ -95,21 +70,7 @@ pub fn ui(jarvis: &mut JarvisUI, ctx: &egui::Context, _frame: &mut eframe::Frame
                                 ui.visuals().warn_fg_color,
                             );
 
-                            if ui.button("Add file to Minio").clicked() {
-                                // let path = Path::new("/home/Jarvis/test");
-                                // let mut file = File::create(path).unwrap();
-                                // write!(file, "asd").unwrap();
-                                let id = ResourceId {
-                                    place: "schedule".to_owned(),
-                                    path: PathBuf::from_str("work").unwrap(),
-                                };
-                                let mut job = Job::new();
-                                job.set_name("test".to_owned());
-                                let resource = Resource {
-                                    id,
-                                    data: ResourceData::Job(job),
-                                };
-                            }
+                            if ui.button("Add file to Minio").clicked() {}
                         });
                     });
                 });
