@@ -4,10 +4,8 @@ use egui::Ui;
 pub use jarvis_ui::*;
 
 mod resource_ui;
-pub use resource_ui::*;
 
 mod message_ui;
-pub use message_ui::*;
 
 mod schedule;
 pub use schedule::*;

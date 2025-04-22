@@ -1,20 +1,7 @@
 use crate::JarvisUI;
-use std::{
-    collections::VecDeque,
-    path::PathBuf,
-    str::FromStr,
-    sync::{Arc, Mutex},
-};
 
-use crate::{
-    data::{Resource, ResourceData, ResourceId},
-    Job,
-};
-use egui::{RichText, Ui};
+use egui::RichText;
 use egui_extras::{Size, StripBuilder};
-use poll_promise::Promise;
-
-pub fn job_ui(jarvis: &mut JarvisUI, ctx: &egui::Context, ui: &mut Ui) {}
 
 pub fn ui(jarvis: &mut JarvisUI, ctx: &egui::Context, _frame: &mut eframe::Frame) {
     egui::CentralPanel::default().show(ctx, |ui| {

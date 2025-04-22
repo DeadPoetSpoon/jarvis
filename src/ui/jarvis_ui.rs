@@ -1,18 +1,7 @@
-use std::{
-    collections::VecDeque,
-    path::PathBuf,
-    str::FromStr,
-    sync::{Arc, Mutex},
-};
-
 use crate::ui::schedule;
-use crate::{
-    data::{Resource, ResourceData, ResourceId},
-    InnerJobKind, Job, JobKind, LaborHall,
-};
+use crate::{data::Resource, LaborHall};
 use chrono::{Datelike, Local, Timelike};
-use log::debug;
-use poll_promise::Promise;
+use log::error;
 
 use super::Show;
 
@@ -38,25 +27,15 @@ pub struct JarvisUI {
     show_msg_panel: bool,
     #[serde(skip)]
     labor_hall: LaborHall,
-    #[serde(skip)]
-    del_all_msg: bool,
-    #[serde(skip)]
-    del_msg_index: Option<usize>,
-    #[serde(skip)]
-    res_queue: Arc<Mutex<VecDeque<Promise<Resource>>>>,
 }
 
 impl Default for JarvisUI {
     fn default() -> Self {
-        let res_queue = Arc::new(Mutex::new(VecDeque::new()));
         Self {
             name: "Jarvis".to_owned(),
             anchor: Anchor::Schedule,
             show_msg_panel: false,
             labor_hall: Default::default(),
-            del_all_msg: false,
-            del_msg_index: None,
-            res_queue,
         }
     }
 }
@@ -86,11 +65,7 @@ impl eframe::App for JarvisUI {
                     }
                     self.anchor = selected_anchor;
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        let msg_icon = if self.has_msg_or_err() {
-                            "󰍡"
-                        } else {
-                            "󰍥"
-                        };
+                        let msg_icon = if self.has_msg() { "󰍡" } else { "󰍥" };
                         if ui.selectable_label(self.show_msg_panel, msg_icon).clicked() {
                             self.show_msg_panel = !self.show_msg_panel;
                         }
@@ -112,16 +87,12 @@ impl eframe::App for JarvisUI {
                 .min_width(400.0)
                 .show(ctx, |ui| {
                     ui.vertical(|ui| {
-                        if ui.button("Add").clicked() {
-                            let msg = Resource::pkg_error(format!("err:{}",Local::now()));
-                            let mut job: Job = Default::default();
-                            job.kind(JobKind::Inner(InnerJobKind::AddMsg(msg)));
-                            self.labor_hall.push_job(job);
+                        if ui.button("clear").clicked() {
+                            self.clear_all_msg();
                         }
-
                         if let Ok(Some(mut res)) = self.labor_hall.get_all_inner_msg() {
                             if let Err(err) = res.show(&super::ShowKind::ShortWithoutId, ui) {
-                                ui.label(format!("{}",err));
+                                ui.label(format!("{}", err));
                             };
                         }
                     });
@@ -131,23 +102,38 @@ impl eframe::App for JarvisUI {
             Anchor::Day => {}
             Anchor::Schedule => schedule::ui(self, ctx, frame),
         }
-        if let Some(promise) = self.pop_promise() {
-            if let Some(resource) = promise.ready() {
-                self.push_resrouse(resource.to_owned());
-            } else {
-                self.push_promise(promise);
-            }
-        }
         if let Err(err) = self.labor_hall.do_job() {
-            debug!("LaborHall Handle Job Err: {}", err);
+            error!("LaborHall Handle Job Err: {}", err);
         };
         ctx.request_repaint();
     }
 }
 impl JarvisUI {
-    pub fn remove_resource(&mut self, index: usize) {}
-    pub fn has_msg_or_err(&self) -> bool {
-        true
+    pub fn clear_all_msg(&mut self) {
+        match self.labor_hall.clear_all_inner_msg() {
+            Ok(_) => {}
+            Err(err) => {
+                error!("From labor hall: {}", err);
+            }
+        }
+    }
+    pub fn has_msg(&mut self) -> bool {
+        match self.labor_hall.has_inner_msg() {
+            Ok(r) => r,
+            Err(err) => {
+                error!("From labor hall: {}", err);
+                false
+            }
+        }
+    }
+    pub fn get_all_msg(&mut self) -> Option<Resource> {
+        match self.labor_hall.get_all_inner_msg() {
+            Ok(res) => res,
+            Err(err) => {
+                error!("From labor hall: {}", err);
+                None
+            }
+        }
     }
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         // set fonts
@@ -202,17 +188,5 @@ impl JarvisUI {
             .unwrap()
             .insert(1, "cn Regular".to_owned());
         font_definitiona
-    }
-    fn push_promise(&mut self, promise: Promise<Resource>) {
-        let mut queue = self.res_queue.lock().unwrap();
-        queue.push_back(promise);
-    }
-    fn pop_promise(&mut self) -> Option<Promise<Resource>> {
-        let mut queue = self.res_queue.lock().unwrap();
-        queue.pop_front()
-    }
-    fn push_resrouse(&mut self, resource: Resource) {}
-    fn pop_resrouse(&mut self) -> Option<Resource> {
-        None
     }
 }

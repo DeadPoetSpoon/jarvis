@@ -47,17 +47,40 @@ impl Labor for InnerMsgLabor {
                 job.finish();
                 Ok(())
             }
+            JobKind::Inner(InnerJobKind::RemoveMsg(id))=>{
+                if let Some(id) = id {
+                    if self.msg_map.remove(id).is_none() {
+                        job.chain_result(Resource::new_no_data());
+                    }else {
+                        job.chain_result(Resource::new_with_data()) ;                       
+                    }
+                }else {
+                    self.msg_map.clear();
+                    job.chain_result(Resource::new_with_data()) ;
+                }
+                job.finish();
+                Ok(())
+            }
             JobKind::Inner(InnerJobKind::GetMsg(id)) => {
                 if let Some(id) = id {
                     if let Some(msg) = self.msg_map.get(id) {
                         job.chain_result(msg.clone());
                     };
-                } else if(self.msg_map.len() > 0) {
-                    let result = Resource::new_mutli();
+                } else if self.msg_map.len() > 0 {
+                    let result = Resource::mutli();
                     job.chain_result(result);
                     for item in self.msg_map.clone() {
                         job.chain_result(item.1);
                     }
+                }
+                job.finish();
+                Ok(())
+            }
+            JobKind::Inner(InnerJobKind::HasMsg) => {
+                if self.msg_map.iter().any(|_|true) {
+                   job.chain_result(Resource::new_with_data());
+                }else {
+                   job.chain_result(Resource::new_no_data());
                 }
                 job.finish();
                 Ok(())

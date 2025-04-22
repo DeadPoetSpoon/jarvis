@@ -25,6 +25,7 @@ impl Default for ResourceId {
 pub enum ResourceData {
     #[default]
     NoData,
+    WithData,
     Message(Message),
     Matters(Matters),
     Mutli(Vec<Resource>),
@@ -40,7 +41,22 @@ impl Resource {
     pub fn is_me(&self, id: &Uuid) -> bool {
         self.id.uid == *id
     }
-    pub fn nodata() -> Self {
+    pub fn has_data(&self) -> bool {
+        !self.is_no_data()
+    }
+    pub fn is_no_data(&self) -> bool {
+        match self.data {
+            ResourceData::NoData => true,
+            _=>false
+        }
+    }
+    pub fn new_with_data() -> Self {
+        Resource {
+            data: ResourceData::WithData,
+            ..Default::default()
+        }
+    }
+    pub fn new_no_data() -> Self {
         Resource {
             data: ResourceData::NoData,
             ..Default::default()
@@ -64,7 +80,7 @@ impl Resource {
             ..Default::default()
         }
     }
-    pub fn new_mutli() -> Self {
+    pub fn mutli() -> Self {
         Resource {
             data: ResourceData::Mutli(Vec::new()),
             ..Default::default()

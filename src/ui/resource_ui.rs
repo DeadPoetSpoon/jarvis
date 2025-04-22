@@ -1,31 +1,26 @@
-use egui_extras::{Size, StripBuilder};
 
-use crate::{Matters, Resource, ResourceData, ResourceId};
+use crate::{Resource, ResourceData, ResourceId};
 
 use super::{Show, ShowKind};
 
 impl Show for Resource {
-    fn show(
-        &mut self,
-        kind: &ShowKind,
-        ui: &mut egui::Ui,
-    ) -> anyhow::Result<()> {
+    fn show(&mut self, kind: &ShowKind, ui: &mut egui::Ui) -> anyhow::Result<()> {
         match kind {
-            ShowKind::ShortWithoutId=>{
+            ShowKind::ShortWithoutId => {
                 self.data.show(kind, ui)?;
             }
             ShowKind::Short => {
-                ui.horizontal(|ui|->anyhow::Result<()>{
+                ui.horizontal(|ui| -> anyhow::Result<()> {
                     self.data.show(kind, ui)?;
                     self.id.show(&ShowKind::Short, ui)?;
                     Ok(())
-                }).inner?;     
-                
+                })
+                .inner?;
             }
             ShowKind::Normal => {
                 self.id.show(kind, ui)?;
                 ui.separator();
-                self.data.show(kind, ui)?;  
+                self.data.show(kind, ui)?;
             }
         }
         Ok(())
@@ -33,21 +28,17 @@ impl Show for Resource {
 }
 
 impl Show for ResourceId {
-    fn show(
-        &mut self,
-        kind: &ShowKind,
-        ui: &mut egui::Ui,
-    ) -> anyhow::Result<()> {
+    fn show(&mut self, kind: &ShowKind, ui: &mut egui::Ui) -> anyhow::Result<()> {
         match kind {
             ShowKind::Short => {
                 ui.label("")
-                .on_hover_cursor(egui::CursorIcon::Help)
-                .on_hover_ui(|x|{
-                    x.style_mut().interaction.selectable_labels = true;
-                    if let Err(err) = self.show(&ShowKind::Normal, x)  {
-                        x.label(format!("{}",err));
-                    };
-                });
+                    .on_hover_cursor(egui::CursorIcon::Help)
+                    .on_hover_ui(|x| {
+                        x.style_mut().interaction.selectable_labels = true;
+                        if let Err(err) = self.show(&ShowKind::Normal, x) {
+                            x.label(format!("{}", err));
+                        };
+                    });
             }
             _ => {
                 let text = format!("UID:{}", self.uid.to_string());
@@ -65,26 +56,26 @@ impl Show for ResourceId {
 }
 
 impl Show for ResourceData {
-    fn show(
-        &mut self,
-        kind: &ShowKind,
-        ui: &mut egui::Ui
-    ) -> anyhow::Result<()> {
+    fn show(&mut self, kind: &ShowKind, ui: &mut egui::Ui) -> anyhow::Result<()> {
         match self {
-            ResourceData::NoData => {}
+            ResourceData::NoData => {
+                ui.label("NO DATA");
+            }
             ResourceData::Message(message) => {
                 message.show(kind, ui)?;
             }
-            ResourceData::Matters(matters) => todo!(),
+            ResourceData::Matters(_matters) => todo!(),
             ResourceData::Mutli(resources) => {
-                ui.vertical(|ui|->anyhow::Result<()>{
+                ui.vertical(|ui| -> anyhow::Result<()> {
                     for resource in resources {
                         resource.show(kind, ui)?;
                     }
                     Ok(())
                 });
-                
             }
+            ResourceData::WithData => {
+                ui.label("WITH INVISIABLE DATA");
+            },
         }
         Ok(())
     }

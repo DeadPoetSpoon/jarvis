@@ -2,9 +2,8 @@ mod inner_labor;
 use std::collections::VecDeque;
 
 pub use inner_labor::*;
-use log::debug;
 
-use crate::{InnerJobKind, Job, JobKind, Resource};
+use crate::{Job, JobKind, Resource};
 
 pub trait Labor {
     fn handle(&mut self, job: &mut Job) -> anyhow::Result<()>;
@@ -36,15 +35,29 @@ impl Default for LaborHall {
 }
 
 impl LaborHall {
+    pub fn clear_all_inner_msg(&mut self) -> anyhow::Result<()> {
+        self.handle_job_by_kind(JobKind::remove_inner_msg(None))?;
+        Ok(())
+    }
+    pub fn has_inner_msg(&mut self) -> anyhow::Result<bool> {
+        let r= match self.handle_job_by_kind(JobKind::has_inner_msg())? {
+            Some(res) => res.has_data(),
+            None => false,
+        };
+        Ok(r)
+    }
     pub fn get_all_inner_msg(&mut self)-> anyhow::Result<Option<Resource>> {
-        let mut job: Job = Default::default();
-        job.kind(JobKind::Inner(InnerJobKind::GetMsg(None)));
-        self.handle_job(&mut job)?;
-        Ok(job.result)
+        self.handle_job_by_kind(JobKind::get_inner_msg(None))
     }
     pub fn labor_limit(&mut self, limit: usize) -> &mut Self {
         self.run_job_limit = limit;
         self
+    }
+    pub fn handle_job_by_kind(&mut self,kind:JobKind) -> anyhow::Result<Option<Resource>> {
+        let mut job:Job = Default::default();
+        job.kind(kind);
+        self.handle_job(&mut job)?;
+        Ok(job.result)
     }
     pub fn handle_job(&mut self, job: &mut Job) -> anyhow::Result<()> {
         for labor in self.labor_vec.iter_mut() {
