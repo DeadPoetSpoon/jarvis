@@ -7,6 +7,8 @@ mod resource_ui;
 
 mod message_ui;
 
+mod matters_ui;
+
 mod schedule;
 pub use schedule::*;
 use thiserror::Error;
@@ -17,18 +19,19 @@ pub enum ShowKind {
     ShortWithoutId,
     Short,
     Normal,
+    Edit,
 }
 
 pub trait Show {
-    fn show(
-        &mut self,
-        kind: &ShowKind,
-        ui: &mut Ui,
-    ) -> anyhow::Result<()>;
+    fn show(&mut self, kind: &ShowKind, ui: &mut Ui) -> anyhow::Result<()>;
 }
 
-#[derive(Error,Debug)]
+#[derive(Error, Debug)]
 pub enum ShowError {
     #[error("Need passing `{0}` to show")]
     NeedPassing(String),
+}
+
+pub trait AppUI {
+    fn ui(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame);
 }

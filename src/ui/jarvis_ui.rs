@@ -3,20 +3,12 @@ use crate::{data::Resource, LaborHall};
 use chrono::{Datelike, Local, Timelike};
 use log::error;
 
-use super::Show;
+use super::{AppUI, ScheduleUI, Show};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Anchor {
     Day,
     Schedule,
-}
-impl Anchor {
-    pub fn all_apps() -> Vec<(String, Anchor)> {
-        vec![
-            ("  Day".to_owned(), Anchor::Day),
-            ("  Schedule".to_owned(), Anchor::Schedule),
-        ]
-    }
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -27,6 +19,8 @@ pub struct JarvisUI {
     show_msg_panel: bool,
     #[serde(skip)]
     labor_hall: LaborHall,
+    #[serde(skip)]
+    apps: Vec<(String, Anchor,Box<dyn AppUI>)>
 }
 
 impl Default for JarvisUI {
@@ -36,6 +30,10 @@ impl Default for JarvisUI {
             anchor: Anchor::Schedule,
             show_msg_panel: false,
             labor_hall: Default::default(),
+            apps: vec![
+                ("  Day".to_owned(), Anchor::Day, Box::new(ScheduleUI::default())),
+                ("  Schedule".to_owned(), Anchor::Schedule, Box::new(ScheduleUI::default())),
+            ]
         }
     }
 }
@@ -55,12 +53,12 @@ impl eframe::App for JarvisUI {
                     ui.add_space(ui.available_size().x / 2.0 - 150.0);
                     ui.visuals_mut().button_frame = false;
                     let mut selected_anchor = self.anchor;
-                    for (name, anchor) in Anchor::all_apps() {
+                    for (name, anchor,_ui) in &self.apps {
                         if ui
-                            .selectable_label(selected_anchor == anchor, name)
+                            .selectable_label(selected_anchor == *anchor, name)
                             .clicked()
                         {
-                            selected_anchor = anchor;
+                            selected_anchor = *anchor;
                         }
                     }
                     self.anchor = selected_anchor;
@@ -71,14 +69,7 @@ impl eframe::App for JarvisUI {
                         }
                         ui.separator();
                         let dt = Local::now();
-                        ui.label(format!(
-                            "{}/{:02}/{:02} {:02}:{:02}",
-                            dt.year(),
-                            dt.month(),
-                            dt.day(),
-                            dt.hour(),
-                            dt.minute()
-                        ));
+                        ui.label(dt.format("%Y/%m/%d %H:%M:%S").to_string());
                     });
                 });
             });
@@ -98,9 +89,10 @@ impl eframe::App for JarvisUI {
                     });
                 });
         }
-        match self.anchor {
-            Anchor::Day => {}
-            Anchor::Schedule => schedule::ui(self, ctx, frame),
+        for (_,archor, app_ui) in self.apps.iter_mut() {
+            if *archor == self.anchor {
+                app_ui.ui(ctx, frame);
+            }
         }
         if let Err(err) = self.labor_hall.do_job() {
             error!("LaborHall Handle Job Err: {}", err);
