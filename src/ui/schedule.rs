@@ -1,4 +1,6 @@
-use crate::{JarvisUI, Matters, Resource};
+use std::path::PathBuf;
+
+use crate::{JarvisUI, Matters, Resource, ResourceId};
 
 use egui::{Align2, Id, Layout, RichText};
 use egui_extras::{Size, StripBuilder};
@@ -30,12 +32,23 @@ impl AppUI for ScheduleUI {
                         self.show_add_window = true;
                         self.wait_to_add_matters = Resource {
                             data: crate::ResourceData::Matters(Matters::default()),
-                            ..Default::default()
+                            id: ResourceId {
+                                place:Some("schedule".to_string()),
+                                path:Some(PathBuf::from("matters")),
+                                ..Default::default()
+                            }
                         }
                     };
                 });
             });
-        egui::Window::new("Add Matters")
+        let name = match &self.wait_to_add_matters.data {
+            crate::ResourceData::Matters(matters)=>{
+                matters.name.to_string()
+            }
+            _ => "".to_string(),
+        };
+        let window_name = format!("Add Matters: {}",name);
+        egui::Window::new(window_name)
             .open(&mut self.show_add_window)
             .fade_in(true)
             .fade_out(true)
@@ -45,10 +58,11 @@ impl AppUI for ScheduleUI {
                 ui.horizontal(|ui| {
                     ui.with_layout(Layout::right_to_left(egui::Align::Center), |ui| {
                         if ui.button("").clicked() {}
+                        if ui.button("").clicked() {}
                     });
                 });
                 ui.add_space(5f32);
-                if let Err(err) = self.wait_to_add_matters.show(&super::ShowKind::Edit, ui) {
+                if let Err(err) = self.wait_to_add_matters.show(&super::ShowKind::EditData, ui) {
                     ui.label(format!("{}", err));
                 };
             });

@@ -20,6 +20,7 @@ pub enum ShowKind {
     Short,
     Normal,
     Edit,
+    EditData,
 }
 
 pub trait Show {

@@ -76,7 +76,7 @@ impl Show for Matters {
                     ui.separator();
                 }
             }
-            super::ShowKind::Edit => {
+            super::ShowKind::Edit | super::ShowKind::EditData => {
                 egui::Grid::new(ui.next_auto_id())
                     .num_columns(2)
                     .spacing([40.0, 4.0])

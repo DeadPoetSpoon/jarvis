@@ -45,8 +45,9 @@ impl Resource {
         !self.is_no_data()
     }
     pub fn is_no_data(&self) -> bool {
-        match self.data {
+        match &self.data {
             ResourceData::NoData => true,
+            ResourceData::Mutli(vec)=>!vec.iter().any(|_|true),
             _=>false
         }
     }
@@ -80,7 +81,7 @@ impl Resource {
             ..Default::default()
         }
     }
-    pub fn mutli() -> Self {
+    pub fn new_mutli() -> Self {
         Resource {
             data: ResourceData::Mutli(Vec::new()),
             ..Default::default()

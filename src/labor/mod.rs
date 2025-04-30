@@ -1,12 +1,16 @@
 mod inner_labor;
-use std::collections::VecDeque;
+mod schedule_labor;
+mod storage_labor;
+use std::{collections::VecDeque, ops::DerefMut};
 
 pub use inner_labor::*;
+pub use schedule_labor::*;
+pub use storage_labor::*;
 
 use crate::{Job, JobKind, Resource};
 
 pub trait Labor {
-    fn handle(&mut self, job: &mut Job) -> anyhow::Result<()>;
+    fn handle(&mut self, job: &mut Job) -> anyhow::Result<Option<Vec<Job>>>;
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -53,20 +57,30 @@ impl LaborHall {
         self.run_job_limit = limit;
         self
     }
-    pub fn handle_job_by_kind(&mut self,kind:JobKind) -> anyhow::Result<Option<Resource>> {
+    fn handle_job_by_kind(&mut self,kind:JobKind) -> anyhow::Result<Option<Resource>> {
         let mut job:Job = Default::default();
         job.kind(kind);
         self.handle_job(&mut job)?;
         Ok(job.result)
     }
-    pub fn handle_job(&mut self, job: &mut Job) -> anyhow::Result<()> {
+    fn handle_job(&mut self, job: &mut Job) -> anyhow::Result<()> {
+        let mut return_job_vec = Vec::new();
         for labor in self.labor_vec.iter_mut() {
-            labor.handle(job)?
+            if let Some(mut job_vec) = labor.handle(job)? {
+                return_job_vec.append(&mut job_vec);
+            }
         }
+        self.push_job_vec(return_job_vec);
         Ok(())
     }
     pub fn push_job(&mut self, job: Job) -> &mut Self {
         self.wait_job_queen.push_back(job);
+        self
+    }
+    pub fn push_job_vec(&mut self,job_vec:Vec<Job>) -> &mut Self {
+        for job in job_vec {
+            self.push_job(job);
+        }
         self
     }
     pub fn do_job(&mut self) -> anyhow::Result<()> {
