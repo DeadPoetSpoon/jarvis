@@ -9,8 +9,8 @@ mod message_ui;
 
 mod matters_ui;
 
-mod schedule;
-pub use schedule::*;
+mod schedule_ui;
+pub use schedule_ui::*;
 use thiserror::Error;
 
 #[derive(Default, Debug)]

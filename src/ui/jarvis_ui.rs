@@ -1,4 +1,4 @@
-use crate::ui::schedule;
+use crate::ui::schedule_ui;
 use crate::{data::Resource, LaborHall};
 use chrono::{Datelike, Local, Timelike};
 use log::error;

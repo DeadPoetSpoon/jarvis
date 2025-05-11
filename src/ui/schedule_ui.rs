@@ -47,8 +47,8 @@ impl AppUI for ScheduleUI {
             }
             _ => "".to_string(),
         };
-        let window_name = format!("Add Matters: {}",name);
-        egui::Window::new(window_name)
+        // let window_name = format!("Add Matters: {}",name);
+        egui::Window::new("Add Matters")
             .open(&mut self.show_add_window)
             .fade_in(true)
             .fade_out(true)
