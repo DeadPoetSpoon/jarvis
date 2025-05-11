@@ -78,13 +78,13 @@ impl Labor for InnerMsgLabor {
                     if let Some(msg) = self.msg_map.get(id) {
                         job.chain_result(msg.clone());
                     };
-                } else if self.msg_map.iter().any(|_|true)  {
+                } else if self.msg_map.iter().any(|_| true) {
                     let result = Resource::new_mutli();
                     job.chain_result(result);
                     for item in self.msg_map.clone() {
                         job.chain_result(item.1);
                     }
-                }else {
+                } else {
                     job.chain_result(Resource::new_no_data());
                 }
                 job.finish();
@@ -97,7 +97,7 @@ impl Labor for InnerMsgLabor {
                 }
                 job.finish();
             }
-            _ => {},
+            _ => {}
         };
         Ok(None)
     }

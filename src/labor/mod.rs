@@ -44,21 +44,21 @@ impl LaborHall {
         Ok(())
     }
     pub fn has_inner_msg(&mut self) -> anyhow::Result<bool> {
-        let r= match self.handle_job_by_kind(JobKind::has_inner_msg())? {
+        let r = match self.handle_job_by_kind(JobKind::has_inner_msg())? {
             Some(res) => res.has_data(),
             None => false,
         };
         Ok(r)
     }
-    pub fn get_all_inner_msg(&mut self)-> anyhow::Result<Option<Resource>> {
+    pub fn get_all_inner_msg(&mut self) -> anyhow::Result<Option<Resource>> {
         self.handle_job_by_kind(JobKind::get_inner_msg(None))
     }
     pub fn labor_limit(&mut self, limit: usize) -> &mut Self {
         self.run_job_limit = limit;
         self
     }
-    fn handle_job_by_kind(&mut self,kind:JobKind) -> anyhow::Result<Option<Resource>> {
-        let mut job:Job = Default::default();
+    fn handle_job_by_kind(&mut self, kind: JobKind) -> anyhow::Result<Option<Resource>> {
+        let mut job: Job = Default::default();
         job.kind(kind);
         self.handle_job(&mut job)?;
         Ok(job.result)
@@ -77,7 +77,7 @@ impl LaborHall {
         self.wait_job_queen.push_back(job);
         self
     }
-    pub fn push_job_vec(&mut self,job_vec:Vec<Job>) -> &mut Self {
+    pub fn push_job_vec(&mut self, job_vec: Vec<Job>) -> &mut Self {
         for job in job_vec {
             self.push_job(job);
         }

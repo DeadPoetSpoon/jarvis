@@ -56,8 +56,8 @@ impl Resource {
     pub fn is_no_data(&self) -> bool {
         match &self.data {
             ResourceData::NoData => true,
-            ResourceData::Mutli(vec)=>!vec.iter().any(|_|true),
-            _=>false
+            ResourceData::Mutli(vec) => !vec.iter().any(|_| true),
+            _ => false,
         }
     }
     pub fn new_with_data() -> Self {
@@ -111,7 +111,7 @@ impl Resource {
             if let Some(o) = &self.id.path {
                 let path = o.clone().join(data_path);
                 self.id.path = Some(path);
-            }   
+            }
         }
     }
 }

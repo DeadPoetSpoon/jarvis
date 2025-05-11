@@ -138,25 +138,27 @@ impl Show for Matters {
                         ui.add(egui::Slider::new(&mut self.urgency, -127..=127));
                         ui.end_row();
                         ui.label("Tags: ");
-                        ui.vertical_centered_justified(|ui|{
+                        ui.vertical_centered_justified(|ui| {
                             ui.text_edit_singleline(&mut self.tag_to_add);
-                            ui.horizontal(|ui|{
-                                let tags = ["work","life"];
+                            ui.horizontal(|ui| {
+                                let tags = ["work", "life"];
                                 for ele in tags {
                                     if ui.button(ele).clicked() {
                                         let ele = ele.to_string();
                                         if !self.tags.contains(&ele) {
-                                            self.tags.push(ele);    
+                                            self.tags.push(ele);
                                         }
-                                    }   
-                                }      
+                                    }
+                                }
                                 if ui.button("").clicked() {
                                     if !self.tags.contains(&self.tag_to_add) {
                                         self.tags.push(self.tag_to_add.clone());
                                     }
                                 }
                                 if ui.button("").clicked() {
-                                    if let Some(index) = self.tags.iter().position(|x|x.eq(&self.tag_to_add)) {
+                                    if let Some(index) =
+                                        self.tags.iter().position(|x| x.eq(&self.tag_to_add))
+                                    {
                                         self.tags.remove(index);
                                     }
                                 }

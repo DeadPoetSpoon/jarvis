@@ -20,7 +20,7 @@ pub struct JarvisUI {
     #[serde(skip)]
     labor_hall: LaborHall,
     #[serde(skip)]
-    apps: Vec<(String, Anchor,Box<dyn AppUI>)>
+    apps: Vec<(String, Anchor, Box<dyn AppUI>)>,
 }
 
 impl Default for JarvisUI {
@@ -31,9 +31,17 @@ impl Default for JarvisUI {
             show_msg_panel: false,
             labor_hall: Default::default(),
             apps: vec![
-                ("  Day".to_owned(), Anchor::Day, Box::new(ScheduleUI::default())),
-                ("  Schedule".to_owned(), Anchor::Schedule, Box::new(ScheduleUI::default())),
-            ]
+                (
+                    "  Day".to_owned(),
+                    Anchor::Day,
+                    Box::new(ScheduleUI::default()),
+                ),
+                (
+                    "  Schedule".to_owned(),
+                    Anchor::Schedule,
+                    Box::new(ScheduleUI::default()),
+                ),
+            ],
         }
     }
 }
@@ -53,7 +61,7 @@ impl eframe::App for JarvisUI {
                     ui.add_space(ui.available_size().x / 2.0 - 150.0);
                     ui.visuals_mut().button_frame = false;
                     let mut selected_anchor = self.anchor;
-                    for (name, anchor,_ui) in &self.apps {
+                    for (name, anchor, _ui) in &self.apps {
                         if ui
                             .selectable_label(selected_anchor == *anchor, name)
                             .clicked()
@@ -89,7 +97,7 @@ impl eframe::App for JarvisUI {
                     });
                 });
         }
-        for (_,archor, app_ui) in self.apps.iter_mut() {
+        for (_, archor, app_ui) in self.apps.iter_mut() {
             if *archor == self.anchor {
                 app_ui.ui(ctx, frame);
             }

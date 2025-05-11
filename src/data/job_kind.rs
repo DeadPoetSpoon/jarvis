@@ -25,9 +25,3 @@ impl JobKind {
         JobKind::Inner(InnerJobKind::HasMsg)
     }
 }
-
-
-
-
-
-

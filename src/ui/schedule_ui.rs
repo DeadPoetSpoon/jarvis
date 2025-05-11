@@ -33,18 +33,16 @@ impl AppUI for ScheduleUI {
                         self.wait_to_add_matters = Resource {
                             data: crate::ResourceData::Matters(Matters::default()),
                             id: ResourceId {
-                                place:Some("schedule".to_string()),
-                                path:Some(PathBuf::from("matters")),
+                                place: Some("schedule".to_string()),
+                                path: Some(PathBuf::from("matters")),
                                 ..Default::default()
-                            }
+                            },
                         }
                     };
                 });
             });
         let name = match &self.wait_to_add_matters.data {
-            crate::ResourceData::Matters(matters)=>{
-                matters.name.to_string()
-            }
+            crate::ResourceData::Matters(matters) => matters.name.to_string(),
             _ => "".to_string(),
         };
         // let window_name = format!("Add Matters: {}",name);
@@ -64,7 +62,10 @@ impl AppUI for ScheduleUI {
                     });
                 });
                 ui.add_space(5f32);
-                if let Err(err) = self.wait_to_add_matters.show(&super::ShowKind::EditData, ui) {
+                if let Err(err) = self
+                    .wait_to_add_matters
+                    .show(&super::ShowKind::EditData, ui)
+                {
                     ui.label(format!("{}", err));
                 };
             });

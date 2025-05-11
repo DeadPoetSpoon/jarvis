@@ -44,45 +44,48 @@ impl Show for ResourceId {
                     });
             }
             ShowKind::Edit => {
-                egui::Grid::new(self.uid).num_columns(2).spacing([30.0, 4.0]).show(ui, |ui| {
-                    ui.label("UID: ");
+                egui::Grid::new(self.uid)
+                    .num_columns(2)
+                    .spacing([30.0, 4.0])
+                    .show(ui, |ui| {
+                        ui.label("UID: ");
 
-                    ui.vertical_centered_justified(|ui| {
-                        let mut old_id = self.uid.to_string();
-                        if ui.text_edit_singleline(&mut old_id).changed() {
-                            if let Ok(nid) = Uuid::try_parse(&old_id) {
-                                self.uid = nid;
+                        ui.vertical_centered_justified(|ui| {
+                            let mut old_id = self.uid.to_string();
+                            if ui.text_edit_singleline(&mut old_id).changed() {
+                                if let Ok(nid) = Uuid::try_parse(&old_id) {
+                                    self.uid = nid;
+                                };
                             };
-                        };
-                    });
+                        });
 
-                    ui.end_row();
-                    ui.label("Place: ");
-                    ui.vertical_centered_justified(|ui| {
-                        let mut old_place = match &self.place {
-                            Some(p) => p.to_string(),
-                            None => "".to_string(),
-                        };
-                        if ui.text_edit_singleline(&mut old_place).changed() {
-                            self.place = Some(old_place)
-                        };
-                    });
+                        ui.end_row();
+                        ui.label("Place: ");
+                        ui.vertical_centered_justified(|ui| {
+                            let mut old_place = match &self.place {
+                                Some(p) => p.to_string(),
+                                None => "".to_string(),
+                            };
+                            if ui.text_edit_singleline(&mut old_place).changed() {
+                                self.place = Some(old_place)
+                            };
+                        });
 
-                    ui.end_row();
-                    ui.label("Path: ");
-                    ui.vertical_centered_justified(|ui| {
-                        let mut old_path: String = match &self.path {
-                            Some(p) => p.to_str().unwrap().to_string(),
-                            None => "".to_string(),
-                        };
-                        if ui.text_edit_singleline(&mut old_path).changed() {
-                            self.path = Some(PathBuf::from(old_path))
-                        };
+                        ui.end_row();
+                        ui.label("Path: ");
+                        ui.vertical_centered_justified(|ui| {
+                            let mut old_path: String = match &self.path {
+                                Some(p) => p.to_str().unwrap().to_string(),
+                                None => "".to_string(),
+                            };
+                            if ui.text_edit_singleline(&mut old_path).changed() {
+                                self.path = Some(PathBuf::from(old_path))
+                            };
+                        });
                     });
-                });
             }
             _ => {
-                egui::Grid::new(self.uid).num_columns(2).show(ui,|ui|{
+                egui::Grid::new(self.uid).num_columns(2).show(ui, |ui| {
                     ui.label("UID: ");
                     ui.label(self.uid.to_string());
                     ui.end_row();
