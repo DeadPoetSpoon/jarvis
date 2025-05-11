@@ -57,7 +57,9 @@ impl AppUI for ScheduleUI {
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.with_layout(Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui.button("").clicked() {}
+                        if ui.button("").clicked() {
+                            self.wait_to_add_matters.gene_path();
+                        }
                         if ui.button("").clicked() {}
                     });
                 });

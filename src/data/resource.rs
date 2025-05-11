@@ -31,6 +31,15 @@ pub enum ResourceData {
     Mutli(Vec<Resource>),
 }
 
+impl ResourceData {
+    pub fn gene_path(&self) -> Option<PathBuf> {
+        match self {
+            ResourceData::Matters(matters) => Some(matters.gene_path()),
+            _ => None,
+        }
+    }
+}
+
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
 pub struct Resource {
     pub id: ResourceId,
@@ -96,6 +105,14 @@ impl Resource {
             self.data = ResourceData::Mutli(vec);
         }
         self
+    }
+    pub fn gene_path(&mut self) {
+        if let Some(data_path) = self.data.gene_path() {
+            if let Some(o) = &self.id.path {
+                let path = o.clone().join(data_path);
+                self.id.path = Some(path);
+            }   
+        }
     }
 }
 

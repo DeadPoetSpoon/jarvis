@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use chrono::{Local, NaiveDate};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Hash)]
@@ -29,5 +31,17 @@ impl Default for Matters {
             tags: Default::default(),
             tag_to_add: Default::default(),
         }
+    }
+}
+
+impl Matters {
+    pub fn gene_path(&self) -> PathBuf {
+        let mut finish_time = "None".to_string();
+        if let Some(f) = self.finish_time {
+            finish_time = f.format("%Y-%m-%d").to_string();
+        };
+        let path = PathBuf::new();
+        let path = path.join(finish_time);
+        path.join(self.start_time.format("%Y-%m-%d").to_string())
     }
 }
