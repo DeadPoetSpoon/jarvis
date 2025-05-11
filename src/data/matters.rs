@@ -10,6 +10,9 @@ pub struct Matters {
     pub magnitude: i8,
     pub urgency: i8,
     pub sub_matters: Vec<Matters>,
+    pub tags: Vec<String>,
+    #[serde(skip)]
+    pub tag_to_add: String,
 }
 
 impl Default for Matters {
@@ -23,6 +26,8 @@ impl Default for Matters {
             magnitude: Default::default(),
             urgency: Default::default(),
             sub_matters: Default::default(),
+            tags: Default::default(),
+            tag_to_add: Default::default(),
         }
     }
 }

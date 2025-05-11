@@ -32,18 +32,18 @@ impl Show for Matters {
                         ui.label(des);
                         ui.end_row();
                         ui.label("Start: ");
-                        ui.label(self.start_time.format("%Y/%m/%d").to_string());
+                        ui.label(self.start_time.format("%Y-%m-%d").to_string());
                         ui.end_row();
                         ui.label("Finish: ");
                         let finish = match &self.finish_time {
-                            Some(f) => f.format("%Y/%m/%d").to_string(),
+                            Some(f) => f.format("%Y-%m-%d").to_string(),
                             None => "BE QUICK".into(),
                         };
                         ui.label(finish);
                         ui.end_row();
                         ui.label("Final: ");
                         let ffinal = match &self.final_time {
-                            Some(f) => f.format("%Y/%m/%d").to_string(),
+                            Some(f) => f.format("%Y-%m-%d").to_string(),
                             None => "TAKE YOU TIME !".into(),
                         };
                         ui.label(ffinal);
@@ -53,6 +53,9 @@ impl Show for Matters {
                         ui.end_row();
                         ui.label("Urgency: ");
                         ui.label(self.urgency.to_string());
+                        ui.end_row();
+                        ui.label("Tags: ");
+                        ui.label(self.tags.join(";"));
                         ui.end_row();
                         ui.label("Sub: ");
                         let count = self.sub_matters.len();
@@ -103,11 +106,11 @@ impl Show for Matters {
                         });
                         ui.end_row();
                         ui.label("Start: ");
-                        ui.label(self.start_time.format("%Y/%m/%d").to_string());
+                        ui.label(self.start_time.format("%Y-%m-%d").to_string());
                         ui.end_row();
                         ui.label("Finish: ");
                         let finish = match &self.finish_time {
-                            Some(f) => f.format("%Y/%m/%d").to_string(),
+                            Some(f) => f.format("%Y-%m-%d").to_string(),
                             None => "BE QUICK".into(),
                         };
                         ui.label(finish);
@@ -134,6 +137,33 @@ impl Show for Matters {
                         ui.label("Urgency: ");
                         ui.add(egui::Slider::new(&mut self.urgency, -127..=127));
                         ui.end_row();
+                        ui.label("Tags: ");
+                        ui.vertical_centered_justified(|ui|{
+                            ui.text_edit_singleline(&mut self.tag_to_add);
+                            ui.horizontal(|ui|{
+                                let tags = ["work","life"];
+                                for ele in tags {
+                                    if ui.button(ele).clicked() {
+                                        let ele = ele.to_string();
+                                        if !self.tags.contains(&ele) {
+                                            self.tags.push(ele);    
+                                        }
+                                    }   
+                                }      
+                                if ui.button("").clicked() {
+                                    if !self.tags.contains(&self.tag_to_add) {
+                                        self.tags.push(self.tag_to_add.clone());
+                                    }
+                                }
+                                if ui.button("").clicked() {
+                                    if let Some(index) = self.tags.iter().position(|x|x.eq(&self.tag_to_add)) {
+                                        self.tags.remove(index);
+                                    }
+                                }
+                            });
+                            ui.label(self.tags.join(";"));
+                        });
+                        ui.end_row();
                         ui.label("Sub: ");
                         ui.horizontal_centered(|ui| {
                             let count = self.sub_matters.len();
@@ -142,7 +172,7 @@ impl Show for Matters {
                                 false => count.to_string(),
                             };
                             ui.label(text);
-                            if ui.button("＋").clicked() {
+                            if ui.button("").clicked() {
                                 self.sub_matters.push(Default::default());
                             }
                         });

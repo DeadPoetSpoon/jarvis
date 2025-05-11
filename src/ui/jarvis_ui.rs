@@ -69,7 +69,7 @@ impl eframe::App for JarvisUI {
                         }
                         ui.separator();
                         let dt = Local::now();
-                        ui.label(dt.format("%Y/%m/%d %H:%M:%S").to_string());
+                        ui.label(dt.format("%Y-%m-%d %H:%M:%S").to_string());
                     });
                 });
             });
